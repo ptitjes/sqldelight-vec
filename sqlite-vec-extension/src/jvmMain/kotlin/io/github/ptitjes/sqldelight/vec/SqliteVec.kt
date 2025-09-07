@@ -1,21 +1,23 @@
 package io.github.ptitjes.sqldelight.vec
 
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.sql.Connection
+import kotlin.io.path.absolutePathString
 
 object SqliteVec {
+
     fun Connection.loadSqliteVecModule() {
         createStatement().use { statement ->
-            statement.execute("SELECT load_extension('${libraryPath}')")
+            statement.execute("SELECT load_extension('$extensionPath')")
         }
     }
 
     private val libraryPath = extractLibrary(System.getProperty("java.io.tmpdir"))
+    private val extensionPath = libraryPath.substringBeforeLast('.')
 
-    private fun extractLibrary(temporaryDirectory: String): Path {
+    private fun extractLibrary(temporaryDirectory: String): String {
         val libraryPath = getSqliteVecLibraryPath()
 
         val resourcePath = "asg017/$libraryPath"
@@ -36,14 +38,21 @@ object SqliteVec {
         extractedLibraryPath.toFile().setReadable(true)
         extractedLibraryPath.toFile().setExecutable(true)
 
-        return extractedLibraryPath
+        return extractedLibraryPath.absolutePathString()
     }
 
     private fun getSqliteVecLibraryPath(): String {
-        val osName = getOsName()
-        val archName = getArchName()
-        val libraryName = System.mapLibraryName("vec0").removePrefix("lib")
-        return "$osName/$archName/$libraryName"
+        val os = getOsName()
+        val arch = getArchName()
+
+        val extension = when (os) {
+            "linux" -> "so"
+            "windows" -> "dll"
+            "macos" -> "dylib"
+            else -> throw UnsupportedOperationException("Unsupported OS: $os")
+        }
+
+        return "$os/$arch/vec0.$extension"
     }
 
     private fun getOsName(): String {
