@@ -1,0 +1,67 @@
+# This file was generated using Kotlin DSL (.github/workflows/build.main.kts).
+# If you want to modify the workflow, please change the Kotlin file and regenerate this YAML file.
+# Generated with https://github.com/typesafegithub/github-workflows-kt
+
+name: 'Build'
+on:
+  push: {}
+  pull_request: {}
+permissions:
+  checks: 'write'
+  pull-requests: 'write'
+jobs:
+  check_yaml_consistency:
+    name: 'Check YAML consistency'
+    runs-on: 'ubuntu-latest'
+    steps:
+    - id: 'step-0'
+      name: 'Check out'
+      uses: 'actions/checkout@v4'
+    - id: 'step-1'
+      name: 'Execute script'
+      run: 'rm ''.github/workflows/build.yaml'' && ''.github/workflows/build.main.kts'''
+    - id: 'step-2'
+      name: 'Consistency check'
+      run: 'git diff --exit-code ''.github/workflows/build.yaml'''
+  build:
+    name: 'Build on ${{ matrix.os }}'
+    runs-on: '${{ matrix.os }}'
+    needs:
+    - 'check_yaml_consistency'
+    strategy:
+      matrix:
+        os:
+        - 'ubuntu-latest'
+        - 'ubuntu-24.04-arm'
+        - 'macos-latest'
+        - 'windows-latest'
+    steps:
+    - id: 'step-0'
+      name: 'Checkout'
+      uses: 'actions/checkout@v4'
+    - id: 'step-1'
+      name: 'Install Java'
+      uses: 'actions/setup-java@v5'
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+    - id: 'step-2'
+      name: 'Validate gradle wrapper'
+      uses: 'gradle/actions/wrapper-validation@v4'
+    - id: 'step-3'
+      name: 'Set up cache'
+      uses: 'actions/cache@v4'
+      with:
+        path: '~/.gradle/caches'
+        key: '${{ runner.os }}-gradle-${{ hashFiles(''**/*.gradle*'') }}'
+        restore-keys: '${{ runner.os }}-gradle-'
+    - id: 'step-4'
+      name: 'Build'
+      run: './gradlew build -Dsplit_targets'
+    - id: 'step-5'
+      name: 'Publish Test Result'
+      uses: 'EnricoMi/publish-unit-test-result-action@v2'
+      with:
+        check_name: 'Build on ${{ matrix.os }}'
+        files: '**/build/test-results/**/*.xml'
+      if: '${{ !cancelled() }}'
