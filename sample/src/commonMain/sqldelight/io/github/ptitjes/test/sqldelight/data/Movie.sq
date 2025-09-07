@@ -1,6 +1,6 @@
-CREATE VIRTUAL TABLE movie USING vec0 (
-    movie_id integer primary key,
-    synopsis_embedding float[8]
+CREATE TABLE movie (
+    movie_id INTEGER NOT NULL PRIMARY KEY,
+    synopsis_embedding BLOB NOT NULL
 );
 
 insertMovie:
