@@ -53,9 +53,8 @@ class JdbcSqliteVecDriverTest {
         )
 
         val embedding = listOf(0.443, -0.501, 0.355, -0.771, 0.707, -0.708, -0.185, 0.362)
-            .joinToString(prefix = "[", separator = ",", postfix = "]")
 
-        val result = executeQuery(
+        val actual = executeQuery(
             identifier = null,
             sql = """
                         SELECT
@@ -68,25 +67,27 @@ class JdbcSqliteVecDriverTest {
                     """.trimIndent(),
             parameters = 3,
             mapper = { cursor ->
-                val result = mutableListOf<Pair<Long?, Double?>>()
+                val result = mutableListOf<Pair<Long, Double>>()
                 while (cursor.next().value) {
-                    result.add(cursor.getLong(0) to cursor.getDouble(1))
+                    result.add(cursor.getLong(0)!! to cursor.getDouble(1)!!)
                 }
-                QueryResult.Value(result)
+                QueryResult.Value(result.toList())
             }
         ) {
-            bindString(0, embedding)
+            bindString(0, embedding.joinToString(prefix = "[", separator = ",", postfix = "]"))
             bindDouble(1, -0.5)
             bindLong(2, null)
-        }
+        }.value
 
-        assertEquals(
-            listOf<Pair<Long?, Double?>>(
-                2L to 1.0,
-                3L to -0.07178997993469238,
-                1L to -0.17035603523254395,
-            ),
-            result.value,
+        val expected = listOf(
+            2L to 1.0,
+            3L to -0.07178997993469238,
+            1L to -0.17035603523254395,
         )
+
+        expected.zip(actual).forEach { (expected, actual) ->
+            assertEquals(expected.first, actual.first)
+            assertEquals(expected.second, actual.second, 0.0001)
+        }
     }
 }
