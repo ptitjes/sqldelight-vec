@@ -1,14 +1,13 @@
 [versions]
 
 projectVersion = "0.1.0"
+sqliteVec = "0.1.7-alpha.2"
 
 agp = "8.10.1"
 kotlin = "2.2.10"
 android-minSdk = "24"
 android-compileSdk = "36"
 vanniktechMavenPublish = "0.34.0"
-
-sqliteVec = "0.1.6"
 
 sqldelight = "2.1.0"
 sqlPsi = "0.6.0"

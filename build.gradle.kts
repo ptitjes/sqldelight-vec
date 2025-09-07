@@ -6,8 +6,9 @@ plugins {
 }
 
 val projectVersion = libs.versions.projectVersion.get()
+val sqliteVecVersion = libs.versions.sqliteVec.get()
 
 allprojects {
     group = "io.github.ptitjes.sqldelight.vec"
-    version = projectVersion
+    version = "$projectVersion-$sqliteVecVersion"
 }
