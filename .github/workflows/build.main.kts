@@ -7,6 +7,7 @@
 @file:DependsOn("actions:checkout:v4")
 @file:DependsOn("actions:setup-java:v5")
 @file:DependsOn("actions:cache:v4")
+@file:DependsOn("actions:download-artifact:v4")
 @file:DependsOn("actions:upload-artifact:v4")
 @file:DependsOn("gradle:actions__wrapper-validation:v4")
 
@@ -16,7 +17,9 @@
 
 import io.github.typesafegithub.workflows.actions.actions.Cache
 import io.github.typesafegithub.workflows.actions.actions.Checkout
+import io.github.typesafegithub.workflows.actions.actions.DownloadArtifact
 import io.github.typesafegithub.workflows.actions.actions.SetupJava
+import io.github.typesafegithub.workflows.actions.actions.UploadArtifact
 import io.github.typesafegithub.workflows.actions.enricomi.PublishUnitTestResultAction
 import io.github.typesafegithub.workflows.actions.gradle.ActionsWrapperValidation
 import io.github.typesafegithub.workflows.domain.Mode
@@ -31,14 +34,10 @@ workflow(
     name = "Build",
     on = listOf(Push(), PullRequest()),
     sourceFile = __FILE__,
-    permissions = mapOf(
-        Permission.Checks to Mode.Write,
-        Permission.PullRequests to Mode.Write,
-    )
 ) {
-    job(
-        id = "build",
-        name = """Build on ${expr("matrix.os")}""",
+    val buildAndTest = job(
+        id = "build-and-test",
+        name = """Build and Test on ${expr("matrix.os")}""",
         strategyMatrix = mapOf(
             "os" to listOf(
                 "ubuntu-latest",
@@ -70,11 +69,37 @@ workflow(
         run(name = "Build", command = "./gradlew build -Dsplit_targets")
 
         uses(
-            name = "Publish Test Result",
+            name = "Upload Test Results",
+            `if` = expr("!cancelled()"),
+            action = UploadArtifact(
+                name = "Test Results on ${expr("matrix.os")}",
+                path = listOf<String>("**/build/test-results/**/*.xml"),
+            ),
+        )
+    }
+
+    job(
+        id = "publish-test-results",
+        name = "Publish Test Results",
+        needs = listOf(buildAndTest),
+        `if` = expr("!cancelled()"),
+        runsOn = RunnerType.UbuntuLatest,
+        permissions = mapOf(
+            Permission.Checks to Mode.Write,
+            Permission.PullRequests to Mode.Write,
+        ),
+    ) {
+        uses(
+            name = "Download artifacts",
+            action = DownloadArtifact(path = "artifacts"),
+        )
+
+        uses(
+            name = "Publish test results",
             `if` = expr("!cancelled()"),
             action = PublishUnitTestResultAction(
-                checkName = """Tests on ${expr("matrix.os")}""",
-                files = listOf<String>("**/build/test-results/**/*.xml"),
+                checkName = "Test Results",
+                files = listOf<String>("artifacts/**/*.xml"),
             ),
         )
     }
