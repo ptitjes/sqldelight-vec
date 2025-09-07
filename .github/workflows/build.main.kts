@@ -73,7 +73,7 @@ workflow(
             name = "Publish Test Result",
             `if` = expr("!cancelled()"),
             action = PublishUnitTestResultAction(
-                checkName = """Build on ${expr("matrix.os")}""",
+                checkName = """Tests on ${expr("matrix.os")}""",
                 files = listOf<String>("**/build/test-results/**/*.xml"),
             ),
         )

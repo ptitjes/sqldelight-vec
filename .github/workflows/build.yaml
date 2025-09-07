@@ -62,6 +62,6 @@ jobs:
       name: 'Publish Test Result'
       uses: 'EnricoMi/publish-unit-test-result-action@v2'
       with:
-        check_name: 'Build on ${{ matrix.os }}'
+        check_name: 'Tests on ${{ matrix.os }}'
         files: '**/build/test-results/**/*.xml'
       if: '${{ !cancelled() }}'
