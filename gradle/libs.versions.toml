@@ -1,0 +1,34 @@
+[versions]
+
+projectVersion = "0.1.0"
+
+agp = "8.10.1"
+kotlin = "2.2.10"
+android-minSdk = "24"
+android-compileSdk = "36"
+vanniktechMavenPublish = "0.34.0"
+
+sqliteVec = "0.1.6"
+
+sqldelight = "2.1.0"
+sqlPsi = "0.6.0"
+kotlinPoet = "2.2.0"
+
+[libraries]
+kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+sqlPsi = { module = "app.cash.sql-psi:core", version.ref = "sqlPsi" }
+sqldelightDialectApi = { module = "app.cash.sqldelight:dialect-api", version.ref = "sqldelight" }
+sqldelightCompilerEnv = { module = "app.cash.sqldelight:compiler-env", version.ref = "sqldelight" }
+kotlinPoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinPoet" }
+
+sqldelightJdbcDriver = { module = "app.cash.sqldelight:jdbc-driver", version.ref = "sqldelight" }
+sqldelightSqliteDriver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+
+[plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+vanniktech-mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechMavenPublish" }
+
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

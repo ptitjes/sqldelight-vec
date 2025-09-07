@@ -1,0 +1,17 @@
+CREATE VIRTUAL TABLE movie USING vec0 (
+    movie_id integer primary key,
+    synopsis_embedding float[8]
+);
+
+insertMovie:
+INSERT INTO movie (movie_id, synopsis_embedding)
+VALUES (:movieId, vec_f32(:embedding));
+
+matchingMovies:
+SELECT
+    movie_id,
+    1.0 - vec_distance_cosine(vec_f32(:embedding), synopsis_embedding) AS similarity
+FROM movie
+WHERE (NULL == :minSimilarity OR similarity >= :minSimilarity)
+ORDER BY similarity DESC
+LIMIT IFNULL(:count, 10);
